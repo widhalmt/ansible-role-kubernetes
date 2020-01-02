@@ -1,0 +1,48 @@
+---
+# tasks file for kubernetes
+#
+# disable swap (from https://germaniumhq.com/2019/02/14/2019-02-14-Disabling-Swap-for-Kubernetes-in-an-Ansible-Playbook/)
+- name: Disable SWAP since kubernetes can't work with swap enabled (1/2)
+  shell: |
+    swapoff -a
+  changed_when: false
+- name: Disable SWAP in fstab since kubernetes can't work with swap enabled (2/2)
+  replace:
+    path: /etc/fstab
+    regexp: '^([^#].*?\sswap\s+sw\s+.*)$'
+    replace: '# \1'
+- name: import docker gpg key
+  apt_key:
+    url: https://download.docker.com/linux/debian/gpg
+- name: install legacy firewall systems
+  package:
+    name:
+      - arptables
+      - ebtables
+    update_cache: yes
+- name: change iptables to actually use iptables
+  shell: update-alternatives --set iptables /usr/sbin/iptables-legacy && update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy && update-alternatives --set arptables /usr/sbin/arptables-legacy && update-alternatives --set ebtables /usr/sbin/ebtables-legacy
+  changed_when: false
+- name: install packages for repository management
+  package:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - software-properties-common
+- name: remove not needed package
+  package:
+    name:
+      - aufs-dkms
+    state: absent
+- name: set docker repository
+  apt_repository:
+    repo: "deb https://download.docker.com/linux/raspbian {{ ansible_distribution_release }} stable"
+    filename: docker
+- name: install docker
+  package:
+    name:
+      - containerd.io
+      - docker-ce
+      - docker-ce-cli
+    update_cache: yes
