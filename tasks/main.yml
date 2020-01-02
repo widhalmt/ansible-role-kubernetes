@@ -46,3 +46,27 @@
       - docker-ce
       - docker-ce-cli
     update_cache: yes
+- name: place docker configuration file
+  template:
+    src: daemon.json.j2
+    dest: /etc/docker/daemon.json
+    owner: root
+    group: root
+    mode: 0644
+- name: create docker systemd directory
+  file:
+    path: /etc/systemd/system/docker.service.d
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  notify:
+    - reload daemons
+    - restart docker
+- name: flush handlers
+  meta: flush_handlers
+- name: start Docker daemon
+  service:
+    name: docker
+    state: started
+    enabled: yes

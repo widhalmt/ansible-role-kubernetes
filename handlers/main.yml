@@ -1,2 +1,8 @@
 ---
 # handlers file for kubernetes
+- name: reload daemons
+  shell: systemctl daemon-reload
+- name: restart docker
+  service:
+    name: docker
+    state: restarted
