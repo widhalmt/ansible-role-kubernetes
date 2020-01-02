@@ -70,3 +70,22 @@
     name: docker
     state: started
     enabled: yes
+- name: import kubernetes gpg key
+  apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+- name: set kubernetes repository
+  apt_repository:
+    #repo: "deb https://apt.kubernetes.io/ kubernetes-{{ ansible_distribution_release }} main"
+    # you need xenial for all Debian releases. see https://github.com/kubernetes/release/issues/728
+    repo: "deb https://apt.kubernetes.io/ kubernetes-xenial main"
+    filename: kubernetes
+- name: install kubernetes
+  package:
+    name:
+      #- "kubectl={{ kubernetes_version }}"
+      #- "kubelet={{ kubernetes_version }}"
+      #- "kubeadm={{ kubernetes_version }}" 
+      - kubectl
+      - kubelet
+      - kubeadm
+    update_cache: yes
